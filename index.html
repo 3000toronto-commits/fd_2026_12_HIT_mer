@@ -1,0 +1,664 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сценарные прогнозы ДДС на 2027 год</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.fd-year {
+  --blue: #1F4E79;
+  --total: #DDEBF7;
+  --yellow: #FFF2CC;
+  --yellow-hover: #FFE49A;
+  --hover: #DFF2F3;
+  --teal: #367879;
+  --text: #2A2F33;
+
+  width: 100%;
+  max-width: 757px;
+  margin: 0;
+  color: var(--text);
+  container-type: inline-size;
+}
+
+.fd-year,
+.fd-year * {
+  box-sizing: border-box;
+}
+
+.fd-year-stage {
+  position: relative;
+  width: 100%;
+  isolation: isolate;
+}
+
+.fd-year-title {
+  display: flex;
+  align-items: center;
+  min-height: 43px;
+  padding: 7px 5px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fd-year-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: white;
+}
+
+.fd-year-table col.label-col {
+  width: 30.5%;
+}
+
+.fd-year-table col.month-col {
+  width: 7.7222%;
+}
+
+.fd-year-table th,
+.fd-year-table td {
+  border: 1px solid #333;
+  padding: 3px 2px;
+  font-size: 9.4px;
+  line-height: 1.12;
+  font-weight: 400;
+  color: #111;
+  vertical-align: middle;
+}
+
+.fd-year-table thead th {
+  height: 44px;
+  padding: 5px 1px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.fd-year-table thead th:first-child {
+  font-size: 11px;
+}
+
+.fd-year-table tbody td {
+  height: 22px;
+  background: #fff;
+}
+
+.fd-year-table tbody td:first-child {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.fd-year-table tbody td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.12px;
+}
+
+/* Разделители */
+.fd-year-table tr.section td {
+  height: 27px;
+  padding: 5px 3px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-color: #193B5B;
+}
+
+/* Итоговые строки */
+.fd-year-table tr.total td {
+  background: var(--total);
+  font-weight: 700;
+  height: 23px;
+}
+
+/* Вводные параметры */
+.fd-year-table tr.measure td:not(:first-child),
+.fd-year-table tr.finance td:not(:first-child) {
+  background: var(--yellow);
+}
+
+/* Месяц переноса CAPEX */
+.fd-year-table tr.capex-month td:not(:first-child) {
+  text-align: left;
+}
+
+/* Интерактивные ячейки */
+.fd-year-table td.zoomable {
+  cursor: zoom-in;
+}
+
+.fd-year-table td.zoomable:focus-visible {
+  outline: 2px solid #F5811F;
+  outline-offset: -2px;
+}
+
+/* Увеличенная копия ячейки */
+.fd-year-zoom {
+  position: absolute;
+  z-index: 100;
+  left: 0;
+  top: 0;
+
+  display: flex;
+  align-items: center;
+
+  padding: 7px 9px;
+  background: var(--hover);
+  border: 1px solid var(--teal);
+  color: var(--text);
+
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+
+  box-shadow: 0 6px 18px rgba(42,47,51,.2);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: scaleY(.78);
+  transform-origin: center;
+
+  transition:
+    opacity .2s ease-out,
+    transform .26s ease-out,
+    visibility .2s;
+
+  pointer-events: none;
+}
+
+.fd-year-zoom.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: scaleY(1);
+}
+
+.fd-year-zoom.yellow {
+  background: var(--yellow-hover);
+  border-color: #B18F20;
+}
+
+.fd-year-zoom.total {
+  background: #C4DFF0;
+  border-color: var(--blue);
+  font-weight: 700;
+}
+
+.fd-year-zoom.number {
+  justify-content: flex-end;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.fd-year-zoom.text {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+/* Адаптация внутри узкого фрейма */
+@container (max-width: 650px) {
+  .fd-year-table th,
+  .fd-year-table td {
+    font-size: 8.8px;
+    padding: 3px 1px;
+  }
+
+  .fd-year-table thead th {
+    font-size: 9px;
+  }
+}
+
+@container (max-width: 470px) {
+  .fd-year-table th,
+  .fd-year-table td {
+    font-size: 7.4px;
+    padding: 3px 1px;
+  }
+
+  .fd-year-table thead th {
+    font-size: 7.8px;
+  }
+
+  .fd-year-table tbody td:first-child {
+    white-space: normal;
+  }
+
+  .fd-year-table tr.section td {
+    font-size: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fd-year-zoom {
+    transition: none;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<section class="fd-year" id="fdYearScenario">
+  <div class="fd-year-stage">
+
+    <table class="fd-year-table">
+
+      <colgroup>
+        <col class="label-col">
+        <col class="month-col" span="9">
+      </colgroup>
+
+      <thead>
+        <tr>
+          <th>Показатель</th>
+          <th>Апрель</th>
+          <th>Май</th>
+          <th>Июнь</th>
+          <th>Июль</th>
+          <th>Август</th>
+          <th>Сентябрь</th>
+          <th>Октябрь</th>
+          <th>Ноябрь</th>
+          <th>Декабрь</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <!-- БАЗОВЫЙ СЦЕНАРИЙ -->
+        <tr class="section">
+          <td>БАЗОВЫЙ СЦЕНАРИЙ</td>
+          <td colspan="9"></td>
+        </tr>
+
+        <tr class="total">
+          <td>Остаток ДС на к.п. нараст. итогом</td>
+          <td>4 610 000</td>
+          <td>8 910 000</td>
+          <td>2 490 000</td>
+          <td>1 680 000</td>
+          <td>5 440 000</td>
+          <td>2 210 000</td>
+          <td>1 520 000</td>
+          <td>1 810 000</td>
+          <td>1 650 000</td>
+        </tr>
+
+        <!-- СТРЕСС-СЦЕНАРИЙ -->
+        <tr class="section">
+          <td>СТРЕСС-СЦЕНАРИЙ</td>
+          <td colspan="9"></td>
+        </tr>
+
+        <tr class="total">
+          <td>Остаток ДС на к.п. нараст. итогом</td>
+          <td>-4 624 072</td>
+          <td>-2 765 084</td>
+          <td>-11 566 111</td>
+          <td>-14 824 486</td>
+          <td>-13 497 878</td>
+          <td>-19 257 273</td>
+          <td>-22 545 206</td>
+          <td>-24 704 961</td>
+          <td>-27 586 001</td>
+        </tr>
+
+        <!-- ОТВЕТНЫЕ МЕРЫ -->
+        <tr class="section">
+          <td>СЦЕНАРИЙ ОТВЕТНЫХ МЕР</td>
+          <td colspan="9"></td>
+        </tr>
+
+        <tr class="measure">
+          <td>Ускорить поступления от покупателей, дней</td>
+          <td>0 дн</td><td>0 дн</td><td>0 дн</td>
+          <td>0 дн</td><td>0 дн</td><td>0 дн</td>
+          <td>0 дн</td><td>0 дн</td><td>0 дн</td>
+        </tr>
+
+        <tr class="measure">
+          <td>Увеличить отсрочку оплаты поставщикам, дней</td>
+          <td>0 дн</td><td>0 дн</td><td>0 дн</td>
+          <td>0 дн</td><td>0 дн</td><td>0 дн</td>
+          <td>0 дн</td><td>0 дн</td><td>0 дн</td>
+        </tr>
+
+        <tr class="measure">
+          <td>Повысить собственную цену</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+        </tr>
+
+        <tr class="measure">
+          <td>Снизить закупки за счет использования запасов</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+        </tr>
+
+        <tr class="measure">
+          <td>Снизить валютную зависимость</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+        </tr>
+
+        <tr class="measure">
+          <td>Сократить процентную нагрузку</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+          <td>0%</td><td>0%</td><td>0%</td>
+        </tr>
+
+        <tr class="measure">
+          <td>Перенести CAPEX, %</td>
+          <td>50%</td>
+          <td>0%</td>
+          <td>70%</td>
+          <td>0%</td>
+          <td>0%</td>
+          <td>50%</td>
+          <td>90%</td>
+          <td>40%</td>
+          <td>95%</td>
+        </tr>
+
+        <tr class="measure capex-month">
+          <td>Месяц переноса CAPEX</td>
+          <td>После 2027</td>
+          <td></td>
+          <td>После 2027</td>
+          <td></td>
+          <td></td>
+          <td>После 2027</td>
+          <td>После 2027</td>
+          <td>После 2027</td>
+          <td>После 2027</td>
+        </tr>
+
+        <!-- РЕЗУЛЬТАТ ПОСЛЕ МЕР -->
+        <tr class="total">
+          <td>Остаток ДС на к.п. нараст. итогом</td>
+          <td>928</td>
+          <td>1 859 916</td>
+          <td>198 889</td>
+          <td>-3 059 486</td>
+          <td>-1 732 878</td>
+          <td>-3 712 273</td>
+          <td>-2 950 206</td>
+          <td>-3 309 961</td>
+          <td>-3 151 001</td>
+        </tr>
+
+        <!-- ФИНАНСИРОВАНИЕ -->
+        <tr class="section">
+          <td>ПРИВЛЕЧЕНИЕ И ОБСЛУЖИВАНИЕ ФИНАНСИРОВАНИЯ</td>
+          <td colspan="9"></td>
+        </tr>
+
+        <tr class="finance">
+          <td>Дата привлечения финансирования</td>
+          <td></td><td></td><td></td>
+          <td>01.07.2027</td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+
+        <tr class="finance">
+          <td>Сумма привлеченного финансирования, руб.</td>
+          <td></td><td></td><td></td>
+          <td>4 600 000</td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+
+        <tr class="finance">
+          <td>Процентная ставка, % годовых</td>
+          <td></td><td></td><td></td>
+          <td>19,0%</td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+
+        <tr class="finance">
+          <td>Срок финансирования, месяцев</td>
+          <td></td><td></td><td></td>
+          <td>24</td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+
+        <tr class="finance">
+          <td>Месяц начала погашения основного долга</td>
+          <td></td><td></td><td></td>
+          <td>Август</td>
+          <td></td><td></td><td></td><td></td><td></td>
+        </tr>
+
+        <!-- РЕЗУЛЬТАТ ПОСЛЕ ФИНАНСИРОВАНИЯ -->
+        <tr class="total">
+          <td>Остаток ДС на к.п. нараст. итогом</td>
+          <td>928</td>
+          <td>1 859 916</td>
+          <td>198 889</td>
+          <td>1 467 681</td>
+          <td>2 521 455</td>
+          <td>272 394</td>
+          <td>767 961</td>
+          <td>144 872</td>
+          <td>43 665</td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    <div class="fd-year-zoom" aria-hidden="true"></div>
+
+  </div>
+</section>
+
+<script>
+(function () {
+  "use strict";
+
+  const root = document.getElementById("fdYearScenario");
+
+  if (!root || root.dataset.ready === "1") return;
+  root.dataset.ready = "1";
+
+  const stage = root.querySelector(".fd-year-stage");
+  const table = root.querySelector(".fd-year-table");
+  const zoom = root.querySelector(".fd-year-zoom");
+
+  const canHover = window.matchMedia(
+    "(hover: hover) and (pointer: fine)"
+  ).matches;
+
+  let activeCell = null;
+  let selectedCell = null;
+
+  const cells = Array.from(
+    table.querySelectorAll(
+      "tbody tr:not(.section) td"
+    )
+  ).filter(cell => cell.textContent.trim());
+
+  function hideZoom() {
+    zoom.classList.remove("visible");
+    activeCell = null;
+  }
+
+  function showZoom(cell) {
+    if (!cell || !cell.textContent.trim()) return;
+
+    activeCell = cell;
+
+    const rect = cell.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
+
+    const column = cell.cellIndex;
+    const row = cell.parentElement;
+
+    const isYellow =
+      row.classList.contains("measure") ||
+      row.classList.contains("finance");
+
+    const isTotal =
+      row.classList.contains("total");
+
+    const isNumber =
+      column > 0 &&
+      !row.classList.contains("capex-month") &&
+      cell.textContent.trim() !== "Август" &&
+      cell.textContent.trim() !== "01.07.2027";
+
+    zoom.className = "fd-year-zoom";
+
+    if (isYellow) zoom.classList.add("yellow");
+    if (isTotal) zoom.classList.add("total");
+
+    zoom.classList.add(
+      isNumber ? "number" : "text"
+    );
+
+    zoom.textContent = cell.textContent.trim();
+
+    /* Увеличение шрифта на 40% */
+    const baseFont = parseFloat(
+      getComputedStyle(cell).fontSize
+    );
+
+    zoom.style.fontSize =
+      (baseFont * 1.4) + "px";
+
+    const baseWidth = rect.width;
+    const baseHeight = rect.height;
+    const stageWidth = stageRect.width;
+
+    let width = baseWidth * 1.42;
+
+    if (isNumber) {
+      width = Math.max(width, baseWidth * 1.7);
+    }
+
+    if (zoom.textContent.length > 28) {
+      width = Math.max(width, baseWidth * 1.5);
+    }
+
+    width = Math.min(width, stageWidth);
+
+    const x = rect.left - stageRect.left;
+    const y = rect.top - stageRect.top;
+
+    let left;
+
+    if (column === 0) {
+      left = x;
+    } else if (column === 9) {
+      left = x + baseWidth - width;
+    } else {
+      left = x + (baseWidth - width) / 2;
+    }
+
+    left = Math.max(
+      0,
+      Math.min(left, stageWidth - width)
+    );
+
+    zoom.style.width = width + "px";
+    zoom.style.left = left + "px";
+    zoom.style.top = "0px";
+    zoom.style.height = "auto";
+
+    const naturalHeight = zoom.scrollHeight;
+    const height = Math.max(
+      baseHeight * 1.4,
+      naturalHeight
+    );
+
+    zoom.style.height = height + "px";
+    zoom.style.top =
+      (y + (baseHeight - height) / 2) + "px";
+
+    zoom.classList.add("visible");
+  }
+
+  cells.forEach(cell => {
+    cell.classList.add("zoomable");
+    cell.tabIndex = 0;
+
+    if (canHover) {
+      cell.addEventListener("mouseenter", () => {
+        if (!selectedCell) showZoom(cell);
+      });
+
+      cell.addEventListener("mouseleave", () => {
+        if (!selectedCell) hideZoom();
+      });
+    }
+
+    cell.addEventListener("click", () => {
+      if (selectedCell === cell) {
+        selectedCell = null;
+        hideZoom();
+      } else {
+        selectedCell = cell;
+        showZoom(cell);
+      }
+    });
+
+    cell.addEventListener("focus", () => {
+      showZoom(cell);
+    });
+
+    cell.addEventListener("blur", () => {
+      if (!selectedCell) hideZoom();
+    });
+
+    cell.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        cell.click();
+      }
+
+      if (event.key === "Escape") {
+        selectedCell = null;
+        hideZoom();
+      }
+    });
+  });
+
+  document.addEventListener("pointerdown", event => {
+    if (!root.contains(event.target)) {
+      selectedCell = null;
+      hideZoom();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (activeCell && activeCell.isConnected) {
+      showZoom(activeCell);
+    } else {
+      hideZoom();
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
